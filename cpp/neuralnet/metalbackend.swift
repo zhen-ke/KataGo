@@ -334,8 +334,8 @@ public class CoreMLComputeHandle {
     }
 }
 
-/// Remove a temp bundle this function created and is not handing to MLModel.
-/// A cleanup failure is logged, not thrown: it must not mask the error that caused it.
+/// Delete the source .mlpackage after compilation
+/// CoreML caches the compiled model, so the source is no longer needed
 private func deleteSourceModel(at url: URL, serverThreadIdx: Int) {
     do {
         try FileManager.default.removeItem(at: url)
@@ -381,7 +381,7 @@ public func createCoreMLComputeHandle(
         // shares that directory's lifetime. Derive the destination from that path
         // rather than resolving the temp directory again here.
         // A failed move is not fatal: load from where compileModel left the bundle.
-        // Do not delete the compiled bundle on either path.
+        // Do not delete the compiled bundle on either path: MLModel may read it lazily.
         let stagedURL = mlpackagePath.deletingLastPathComponent()
             .appendingPathComponent(compiledURL.lastPathComponent)
         let modelURL: URL
